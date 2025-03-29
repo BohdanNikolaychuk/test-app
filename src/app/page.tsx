@@ -1,7 +1,5 @@
 "use client";
 
-import type React from "react";
-
 import { Button } from "@/shared/ui/button";
 import {
   Card,
@@ -20,86 +18,106 @@ import {
   SelectValue,
 } from "@/shared/ui/select";
 import { Textarea } from "@/shared/ui/textarea";
+import Joi from "joi";
 import { AlertCircle, Github, Mail, User } from "lucide-react";
-import { useState } from "react";
+import React, { useState } from "react";
+
+interface FormData {
+  name: string;
+  email: string;
+  github_repo_url: string;
+  candidate_level: string;
+  assignment_description: string;
+}
+
+const schema = Joi.object({
+  name: Joi.string().min(1).required().messages({
+    "string.base": "Name must be a string.",
+    "string.empty": "Name is required.",
+    "any.required": "Name is required.",
+  }),
+  email: Joi.string()
+    .email({ tlds: { allow: false } })
+    .required()
+    .messages({
+      "string.email": "Email must be a valid email address.",
+      "string.empty": "Email is required.",
+      "any.required": "Email is required.",
+    }),
+  github_repo_url: Joi.string().uri().required().messages({
+    "string.uri": "GitHub repository URL must be a valid URL.",
+    "string.empty": "GitHub repository URL is required.",
+    "any.required": "GitHub repository URL is required.",
+  }),
+  candidate_level: Joi.string()
+    .valid("Junior", "Middle", "Senior", "Principal")
+    .required()
+    .messages({
+      "any.only":
+        "Candidate level must be one of Junior, Middle, Senior or Principal.",
+      "any.required": "Candidate level is required.",
+    }),
+  assignment_description: Joi.string().min(10).required().messages({
+    "string.base": "Assignment description must be a string.",
+    "string.empty": "Assignment description is required.",
+    "string.min": "Assignment description must be at least 10 characters.",
+    "any.required": "Assignment description is required.",
+  }),
+});
 
 export default function Home() {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     name: "",
     email: "",
-    github: "",
-    level: "",
-    assignment: "",
+    github_repo_url: "",
+    candidate_level: "",
+    assignment_description: "",
   });
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: "" }));
     }
   };
 
   const handleSelectChange = (value: string) => {
-    setFormData((prev) => ({ ...prev, level: value }));
-    if (errors.level) {
-      setErrors((prev) => ({ ...prev, level: "" }));
+    setFormData((prev) => ({ ...prev, candidate_level: value }));
+    if (errors.candidate_level) {
+      setErrors((prev) => ({ ...prev, candidate_level: "" }));
     }
   };
 
   const validateForm = () => {
-    const newErrors: Record<string, string> = {};
-
-    if (!formData.name.trim()) {
-      newErrors.name = "Name is required";
+    const { error } = schema.validate(formData, { abortEarly: false });
+    if (error) {
+      const newErrors: Record<string, string> = {};
+      error.details.forEach((err) => {
+        newErrors[err.path[0] as string] = err.message;
+      });
+      setErrors(newErrors);
+      return false;
     }
-
-    if (!formData.email.trim()) {
-      newErrors.email = "Email is required";
-    } else if (!/^\S+@\S+\.\S+$/.test(formData.email)) {
-      newErrors.email = "Please enter a valid email address";
-    }
-
-    if (!formData.github.trim()) {
-      newErrors.github = "GitHub repository is required";
-    } else if (
-      !/^https?:\/\/github\.com\/[\w-]+\/[\w-]+/.test(formData.github)
-    ) {
-      newErrors.github = "Please enter a valid GitHub repository URL";
-    }
-
-    if (!formData.level) {
-      newErrors.level = "Please select your level";
-    }
-
-    if (!formData.assignment.trim()) {
-      newErrors.assignment = "Assignment submission is required";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    setErrors({});
+    return true;
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
-    if (!validateForm()) {
-      return;
-    }
-
+    if (!validateForm()) return;
     setIsSubmitting(true);
   };
 
   return (
     <div className="w-full px-4 py-8 sm:px-0">
       <Card className="w-full max-w-2xl mx-auto shadow-lg">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center sm:text-3xl">
+        <CardHeader>
+          <CardTitle className="text-2xl font-bold text-center">
             Assignment Submission
           </CardTitle>
         </CardHeader>
@@ -175,7 +193,10 @@ export default function Home() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="github" className="text-base font-medium">
+              <Label
+                htmlFor="github_repo_url"
+                className="text-base font-medium"
+              >
                 GitHub Repository
               </Label>
               <div className="relative">
@@ -183,93 +204,108 @@ export default function Home() {
                   <Github size={18} />
                 </div>
                 <Input
-                  id="github"
-                  name="github"
-                  value={formData.github}
+                  id="github_repo_url"
+                  name="github_repo_url"
+                  value={formData.github_repo_url}
                   onChange={handleChange}
                   placeholder="https://github.com/username/repository"
                   className={`pl-10 ${
-                    errors.github
+                    errors.github_repo_url
                       ? "border-red-500 focus-visible:ring-red-500"
                       : ""
                   }`}
-                  aria-invalid={!!errors.github}
-                  aria-describedby={errors.github ? "github-error" : undefined}
+                  aria-invalid={!!errors.github_repo_url}
+                  aria-describedby={
+                    errors.github_repo_url ? "github-error" : undefined
+                  }
                 />
               </div>
-              {errors.github && (
+              {errors.github_repo_url && (
                 <p
                   id="github-error"
                   className="text-sm font-medium text-red-500 flex items-center gap-1 mt-1"
                 >
                   <AlertCircle size={14} />
-                  {errors.github}
+                  {errors.github_repo_url}
                 </p>
               )}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="level" className="text-base font-medium">
+              <Label
+                htmlFor="candidate_level"
+                className="text-base font-medium"
+              >
                 Candidate Level
               </Label>
-              <Select value={formData.level} onValueChange={handleSelectChange}>
+              <Select
+                value={formData.candidate_level}
+                onValueChange={handleSelectChange}
+              >
                 <SelectTrigger
-                  id="level"
+                  id="candidate_level"
                   className={
-                    errors.level
+                    errors.candidate_level
                       ? "border-red-500 focus-visible:ring-red-500"
                       : ""
                   }
-                  aria-invalid={!!errors.level}
-                  aria-describedby={errors.level ? "level-error" : undefined}
+                  aria-invalid={!!errors.candidate_level}
+                  aria-describedby={
+                    errors.candidate_level ? "candidate-level-error" : undefined
+                  }
                 >
                   <SelectValue placeholder="Select your experience level" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="beginner">Beginner</SelectItem>
-                  <SelectItem value="intermediate">Intermediate</SelectItem>
-                  <SelectItem value="advanced">Advanced</SelectItem>
-                  <SelectItem value="expert">Expert</SelectItem>
+                  <SelectItem value="Junior">Junior</SelectItem>
+                  <SelectItem value="Middle">Middle</SelectItem>
+                  <SelectItem value="Senior">Senior</SelectItem>
+                  <SelectItem value="Principal">Principal</SelectItem>
                 </SelectContent>
               </Select>
-              {errors.level && (
+              {errors.candidate_level && (
                 <p
-                  id="level-error"
+                  id="candidate-level-error"
                   className="text-sm font-medium text-red-500 flex items-center gap-1 mt-1"
                 >
                   <AlertCircle size={14} />
-                  {errors.level}
+                  {errors.candidate_level}
                 </p>
               )}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="assignment" className="text-base font-medium">
+              <Label
+                htmlFor="assignment_description"
+                className="text-base font-medium"
+              >
                 Assignment Submission
               </Label>
               <Textarea
-                id="assignment"
-                name="assignment"
-                value={formData.assignment}
+                id="assignment_description"
+                name="assignment_description"
+                value={formData.assignment_description}
                 onChange={handleChange}
                 placeholder="Describe your assignment or add any additional notes..."
                 className={`min-h-[150px] resize-y ${
-                  errors.assignment
+                  errors.assignment_description
                     ? "border-red-500 focus-visible:ring-red-500"
                     : ""
                 }`}
-                aria-invalid={!!errors.assignment}
+                aria-invalid={!!errors.assignment_description}
                 aria-describedby={
-                  errors.assignment ? "assignment-error" : undefined
+                  errors.assignment_description
+                    ? "assignment-description-error"
+                    : undefined
                 }
               />
-              {errors.assignment && (
+              {errors.assignment_description && (
                 <p
-                  id="assignment-error"
+                  id="assignment-description-error"
                   className="text-sm font-medium text-red-500 flex items-center gap-1 mt-1"
                 >
                   <AlertCircle size={14} />
-                  {errors.assignment}
+                  {errors.assignment_description}
                 </p>
               )}
             </div>
