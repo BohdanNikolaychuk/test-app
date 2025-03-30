@@ -26,10 +26,12 @@ const schema = Joi.object({
   candidate_level: Joi.string()
     .valid("Junior", "Middle", "Senior", "Principal")
     .required()
+    .empty("")
     .messages({
       "any.only":
         "Candidate level must be one of Junior, Middle, Senior or Principal.",
       "any.required": "Candidate level is required.",
+      "string.empty": "Candidate level cannot be empty.",
     }),
   assignment_description: Joi.string().min(10).required().messages({
     "string.base": "Assignment description must be a string.",
@@ -99,12 +101,16 @@ export const submitAssignmentAction = async (
     "https://tools.qa.ale.ai/api/tools/candidates/assignments",
     filteredData
   );
-  console.log("response", response);
+
   if (
     response.data.status === "success" &&
     response.data.message === "Assignment submitted successfully!"
   ) {
-    redirect("/thank-you");
+    const queryString = new URLSearchParams(
+      filteredData as Record<string, string>
+    ).toString();
+    redirect(`/thank-you?${queryString}`);
   }
+
   return { formData, errors: {} };
 };

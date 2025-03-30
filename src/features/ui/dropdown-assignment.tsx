@@ -1,3 +1,5 @@
+"use client";
+
 import { Label } from "@/shared/ui/label";
 import {
   Select,
@@ -6,9 +8,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/ui/select";
+import axios from "axios";
 import { AlertCircle } from "lucide-react";
+import { useEffect, useState } from "react";
 
-export default async function DropDownAssignment({
+export default function DropDownAssignment({
   formData,
   errors,
 }: {
@@ -17,11 +21,23 @@ export default async function DropDownAssignment({
     candidate_level?: string;
   };
 }) {
-  const res = await fetch(
-    "https://tools.qa.ale.ai/api/tools/candidates/levels"
-  );
-  const data = await res.json();
-  const candidateLevels = data.levels || [];
+  const [candidateLevels, setCandidateLevels] = useState<string[]>([]);
+
+  useEffect(() => {
+    const fetchCandidateLevels = async () => {
+      try {
+        const { data } = await axios.get(
+          "https://tools.qa.ale.ai/api/tools/candidates/levels"
+        );
+        setCandidateLevels(data.levels || []);
+      } catch (error) {
+        console.error("Error fetching candidate levels:", error);
+      }
+    };
+
+    fetchCandidateLevels();
+  }, []);
+
   return (
     <div className="space-y-2">
       <Label htmlFor="candidate_level" className="text-base font-medium">

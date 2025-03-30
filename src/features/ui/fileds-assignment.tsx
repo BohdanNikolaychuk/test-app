@@ -38,7 +38,6 @@ export function FieldsAssignment({
             className={`pl-10 ${errors?.name ? "border-red-500" : ""}`}
             aria-invalid={!!errors?.name}
             aria-describedby={errors?.name ? `${nameId}-error` : undefined}
-            required
             defaultValue={formData?.get("name")?.toString()}
           />
         </div>
@@ -69,7 +68,6 @@ export function FieldsAssignment({
             className={`pl-10 ${errors?.email ? "border-red-500" : ""}`}
             aria-invalid={!!errors?.email}
             aria-describedby={errors?.email ? `${emailId}-error` : undefined}
-            required
             defaultValue={formData?.get("email")?.toString()}
           />
         </div>
@@ -103,7 +101,6 @@ export function FieldsAssignment({
             aria-describedby={
               errors?.github_repo_url ? `${githubId}-error` : undefined
             }
-            required
             defaultValue={formData?.get("github_repo_url")?.toString()}
           />
         </div>
@@ -135,7 +132,6 @@ export function FieldsAssignment({
               : ""
           }`}
           aria-invalid={!!errors?.assignment_description}
-          required
           defaultValue={formData?.get("assignment_description")?.toString()}
           aria-describedby={
             errors?.assignment_description
