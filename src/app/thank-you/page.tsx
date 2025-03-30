@@ -157,38 +157,6 @@ export default function ThankYouPage() {
               </p>
             </div>
           )}
-
-          <div className="bg-muted/50 p-4 rounded-lg">
-            <h3 className="font-medium mb-2">What happens next?</h3>
-            <ul className="space-y-2 text-sm">
-              <li className="flex items-start gap-2">
-                <div className="h-5 w-5 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <span className="text-xs font-medium">1</span>
-                </div>
-                <p>
-                  Our team will review your submission within 2-3 business days.
-                </p>
-              </li>
-              <li className="flex items-start gap-2">
-                <div className="h-5 w-5 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <span className="text-xs font-medium">2</span>
-                </div>
-                <p>
-                  You'll receive an email confirmation at{" "}
-                  {submissionData?.email || "your email address"}.
-                </p>
-              </li>
-              <li className="flex items-start gap-2">
-                <div className="h-5 w-5 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <span className="text-xs font-medium">3</span>
-                </div>
-                <p>
-                  If your submission meets our criteria, we'll contact you for
-                  the next steps.
-                </p>
-              </li>
-            </ul>
-          </div>
         </CardContent>
 
         <CardFooter className="flex flex-col gap-4">
@@ -199,16 +167,6 @@ export default function ThankYouPage() {
             <ArrowLeft className="h-4 w-4" />
             Back to Form
           </Button>
-
-          <p className="text-center text-sm text-muted-foreground">
-            If you have any questions, please contact us at{" "}
-            <a
-              href="mailto:support@example.com"
-              className="text-primary hover:underline"
-            >
-              support@example.com
-            </a>
-          </p>
         </CardFooter>
       </Card>
     </div>
