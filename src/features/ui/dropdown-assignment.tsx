@@ -10,7 +10,7 @@ import {
 } from "@/shared/ui/select";
 import axios from "axios";
 import { AlertCircle } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 
 export default function DropDownAssignment({
   formData,
@@ -22,6 +22,7 @@ export default function DropDownAssignment({
   };
 }) {
   const [candidateLevels, setCandidateLevels] = useState<string[]>([]);
+  const candidateLevelId = useId();
 
   useEffect(() => {
     const fetchCandidateLevels = async () => {
@@ -40,7 +41,7 @@ export default function DropDownAssignment({
 
   return (
     <div className="space-y-2">
-      <Label htmlFor="candidate_level" className="text-base font-medium">
+      <Label htmlFor={candidateLevelId} className="text-base font-medium">
         Candidate Level
       </Label>
       <Select
@@ -48,7 +49,7 @@ export default function DropDownAssignment({
         defaultValue={formData?.get("candidate_level")?.toString()}
       >
         <SelectTrigger
-          id="candidate_level"
+          id={candidateLevelId}
           className={
             errors?.candidate_level
               ? "border-red-500 focus-visible:ring-red-500"

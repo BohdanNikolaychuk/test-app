@@ -3,6 +3,8 @@
 import axios from "axios";
 import Joi from "joi";
 import { redirect } from "next/navigation";
+const githubRepoPattern =
+  /^(https:\/\/github\.com\/[a-zA-Z0-9_-]+\/[a-zA-Z0-9_-]+)(\/)?$/;
 
 const schema = Joi.object({
   name: Joi.string().min(1).required().messages({
@@ -18,11 +20,17 @@ const schema = Joi.object({
       "string.empty": "Email is required.",
       "any.required": "Email is required.",
     }),
-  github_repo_url: Joi.string().uri().required().messages({
-    "string.uri": "GitHub repository URL must be a valid URL.",
-    "string.empty": "GitHub repository URL is required.",
-    "any.required": "GitHub repository URL is required.",
-  }),
+  github_repo_url: Joi.string()
+    .pattern(githubRepoPattern)
+    .uri()
+    .required()
+    .messages({
+      "string.uri": "GitHub repository URL must be a valid URL.",
+      "string.empty": "GitHub repository URL is required.",
+      "any.required": "GitHub repository URL is required.",
+      "string.pattern.base":
+        "GitHub repository URL must be a valid GitHub repository URL.",
+    }),
   candidate_level: Joi.string()
     .valid("Junior", "Middle", "Senior", "Principal")
     .required()
@@ -94,7 +102,7 @@ export const submitAssignmentAction = async (
 
   const errors = validateFormData(filteredData);
   if (Object.keys(errors).length > 0) {
-    return { errors };
+    return { formData, errors };
   }
 
   const response = await axios.post<SuccessResponse>(
